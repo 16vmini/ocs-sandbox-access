@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OCS AI Sandbox access</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root { --bg:#f2f4f7; --surface:#fff; --ink:#141b26; --muted:#5a6575; --line:#d9dfe7; --accent:#3b46c4; --accent-soft:#e6e8fb; --ok:#1e7a4a; --ok-soft:#dff2e7; --warn:#9a6400; --warn-soft:#fbefd6; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0f141b; --surface:#171e28; --ink:#e6ebf2; --muted:#95a0b0; --line:#273141; --accent:#9aa2ff; --accent-soft:#232a52; --ok:#57c98c; --ok-soft:#173326; --warn:#e8b44c; --warn-soft:#362a12; color-scheme:dark; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 "IBM Plex Sans",system-ui,sans-serif; }
+.wrap { max-width:720px; margin:0 auto; padding:32px 16px 48px; display:grid; gap:20px; }
+header { display:flex; align-items:center; gap:14px; }
+.logo { width:44px; height:44px; border-radius:10px; background:var(--accent); color:#fff; display:grid; place-items:center; font-weight:600; letter-spacing:.04em; }
+header .t { font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+header h1 { margin:0; font-size:22px; }
+.card { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; display:grid; gap:12px; }
+h2 { margin:0; font-size:15px; }
+.ip { font:500 34px/1.1 "IBM Plex Mono",monospace; letter-spacing:.02em; word-break:break-all; }
+.ip.small { font-size:18px; color:var(--muted); }
+.row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+button, a.btn { font:inherit; font-weight:500; border-radius:8px; padding:9px 16px; cursor:pointer; text-decoration:none; border:1px solid var(--line); background:var(--surface); color:var(--ink); }
+.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+.note { font-size:14px; color:var(--muted); margin:0; }
+.pill { display:inline-block; padding:2px 10px; border-radius:999px; font-size:13px; font-weight:500; }
+.pill.warn { background:var(--warn-soft); color:var(--warn); }
+.pill.ok { background:var(--ok-soft); color:var(--ok); }
+ol { margin:0; padding-left:22px; display:grid; gap:8px; }
+code { font-family:"IBM Plex Mono",monospace; font-size:14px; background:var(--accent-soft); padding:1px 6px; border-radius:4px; }
+details summary { cursor:pointer; color:var(--accent); font-weight:500; }
+footer { font-size:13px; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">OCS</div>
+    <div><div class="t">OCS Consulting · AI Sandbox</div><h1>Connecting to your sandbox</h1></div>
+  </header>
+
+  <div class="card">
+    <div class="row"><h2>Your connection address</h2><span class="pill warn" id="state">Checking…</span></div>
+    <div class="ip" id="ip4">…</div>
+    <div class="ip small" id="ip6" hidden></div>
+    <p class="note">The sandbox only accepts Remote Desktop connections from addresses OCS has approved. Send us this address and we'll add it, usually within an hour in working time. You'll need to do this again if you work from a new place.</p>
+    <div class="row">
+      <a class="btn primary" id="mail" href="#">Email this address to OCS AI Support</a>
+      <button type="button" id="copy">Copy address</button>
+    </div>
+    <p class="note" id="copied" hidden>Copied.</p>
+  </div>
+
+  <div class="card">
+    <h2>Once OCS has confirmed your address</h2>
+    <ol>
+      <li>Open <strong>Remote Desktop Connection</strong> (press Start and type <code>mstsc</code>), or the Windows App on a Mac.</li>
+      <li>Computer: <code>20.90.92.49</code> · User name: the account OCS gave you.</li>
+      <li>Enter your password. Only one person can use the desktop at a time, so if someone else is on, you'll be asked to wait.</li>
+      <li>When the desktop opens, the <strong>Sandbox Hub</strong> page shows you where everything is.</li>
+    </ol>
+    <div class="row">
+      <a class="btn primary" id="rdp" download="Suzuki-AI-Sandbox.rdp" href="#">Download Remote Desktop shortcut</a>
+      <span class="note">Double-click the downloaded file to open Remote Desktop with everything filled in.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Problems?</h2>
+    <p class="note" style="margin:0">OCS AI Support: <strong>matthewg@ocs-consulting.com</strong> · Teams: Matthew Green. If the desktop was working yesterday and isn't today, your address has probably changed: send the new one from this page.</p>
+  </div>
+
+  <footer>OCS Consulting PLC · Devonshire House, Manor Way, Borehamwood WD6 1QQ · This page does not store your address.</footer>
+</div>
+
+<script>
+(async () => {
+  const $ = id => document.getElementById(id);
+  const to = 'matthewg@ocs-consulting.com';
+  const get = async (url) => { const r = await fetch(url, { cache: 'no-store' }); if (!r.ok) throw 0; return (await r.text()).trim(); };
+  let v4 = null, v6 = null;
+  try { v4 = await get('https://api4.ipify.org'); } catch { try { v4 = await get('https://ipv4.icanhazip.com'); } catch {} }
+  try { v6 = await get('https://api6.ipify.org'); } catch {}
+  if (v6 && v6 === v4) v6 = null;
+
+  if (v4) {
+    $('ip4').textContent = v4;
+    $('state').textContent = 'Address found';
+    $('state').className = 'pill ok';
+  } else {
+    $('ip4').textContent = 'Could not detect';
+    $('state').textContent = 'Blocked by a filter?';
+    $('ip4').insertAdjacentHTML('afterend', '<p class="note">Your network may be blocking the lookup. Search the web for "what is my IP" and send us the IPv4 address (four numbers with dots).</p>');
+  }
+  if (v6) { $('ip6').textContent = 'IPv6: ' + v6 + ' (not needed)'; $('ip6').hidden = false; }
+
+  const body = `Hi,\n\nPlease allow my address for the Suzuki AI Sandbox.\n\nIPv4: ${v4 || '(could not detect)'}\nName:\nLocation (office / home):\n\nThanks`;
+  $('mail').href = `mailto:${to}?subject=${encodeURIComponent('Sandbox access: please allow my IP')}&body=${encodeURIComponent(body)}`;
+  const rdp = ['full address:s:20.90.92.49', 'prompt for credentials:i:1', 'screen mode id:i:2',
+    'redirectclipboard:i:0', 'redirectdrives:i:0', 'redirectprinters:i:0', 'audiomode:i:2', ''].join('\r\n');
+  $('rdp').href = URL.createObjectURL(new Blob([rdp], { type: 'application/x-rdp' }));
+  $('copy').onclick = async () => {
+    try { await navigator.clipboard.writeText(v4 || ''); $('copied').hidden = false; setTimeout(() => $('copied').hidden = true, 1500); } catch {}
+  };
+})();
+</script>
+</body>
+</html>
